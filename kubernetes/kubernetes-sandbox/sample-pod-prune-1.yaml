@@ -1,0 +1,10 @@
+apiVersion:
+kind: pod
+metadata:
+  name: sample-pod-prune-1
+  labels:
+    system: a
+spec:
+  container:
+    - name: nginx-container
+      image: nginx:1.12
