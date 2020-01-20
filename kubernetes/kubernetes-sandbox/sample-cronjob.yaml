@@ -5,8 +5,11 @@ metadata:
 spec:
   schedule: "*/1 * * * *"
   concurrencyPolicy: Allow
+  # Kube Masterが死んでいた場合に実行を許容する秒数。デフォルトではどれだけ遅れても実行する。
   startingDeadlineSeconds: 30
+  # 成功したJobを保存しておく数(紐づくPodも残っている)
   successfulJobsHistoryLimit: 5
+  # 失敗したJobを保存しておく数(紐づくPodも残っている)
   failedJobsHistoryLimit: 3
   suspend: false
   jobTemplate:
