@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: sample-nodeport-fail2
+spec:
+  type: NodePort
+  ports:
+    - name: "http-port"
+      protocol: "TCP"
+      port: 8080
+      targetPort: 80
+      # sample-nodeportを起動している状態では30080はbindされているので失敗する
+      nodePort: 30080
+  selector:
+    app: sample-app
+
