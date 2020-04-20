@@ -1,0 +1,11 @@
+_format_version: "1.1"
+
+services:
+  - name: kong-service
+    url: http://go_sample:8080
+    plugins:
+    - name: my-plugin
+    routes:
+      - name: kong-route
+        paths:
+          - /
