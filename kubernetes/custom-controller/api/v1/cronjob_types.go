@@ -17,7 +17,10 @@ limitations under the License.
 package v1
 
 import (
+	"k8s.io/api/batch/v1beta1"
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 )
 
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
@@ -28,15 +31,50 @@ type CronJobSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
-	// Foo is an example field of CronJob. Edit CronJob_types.go to remove/update
-	Foo string `json:"foo,omitempty"`
+	// +kubebuilder:validation:MinLength=0
+	Schedule string `josn:"schedule"`
+
+	// + kubebuilder:validation:Minimum=0
+
+	// +optional
+	StartingDeadlineSeconds *int64 `json:"startingDeadlineSeconds,omitempty"`
+
+	// +optional
+	ConcurrencyPolicy ConcurrencyPolicy `json:"concurrencyPolicy,omitempty"`
+
+	// +optional
+	Suspend *bool `json:"suspend,omitempty"`
+
+	JobTemplate v1beta1.JobTemplate `json:"jobTemplate"`
+
+	// +kubebuilder:validation:Minimum=0
+	// +optional
+	SuccessfulJobHistoryLimit *int32 `json:"successfulJobHistoryLimit,omitempty"`
+
+	// +optional
+	FailedJobHistoryLimit *int32 `json:"failedJobHistoryLimit,omitempty"`
 }
 
 // CronJobStatus defines the observed state of CronJob
 type CronJobStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
+
+	// +optional
+	Active []v1.ObjectReference `json:"active,omitempty"`
+
+	LastScheduledTime *metav1.Time `json:"lastScheduledTime,omitempty"`
 }
+
+type ConcurrencyPolicy string
+
+const (
+	AllowConcurrent ConcurrencyPolicy = "Allow"
+
+	ForbidConcurrent ConcurrencyPolicy = "Forbid"
+
+	ReplaceConcurrent ConcurrencyPolicy = "Replace"
+)
 
 // +kubebuilder:object:root=true
 
@@ -47,6 +85,10 @@ type CronJob struct {
 
 	Spec   CronJobSpec   `json:"spec,omitempty"`
 	Status CronJobStatus `json:"status,omitempty"`
+}
+
+func (c CronJob) DeepCopyObject() runtime.Object {
+	panic("implement me")
 }
 
 // +kubebuilder:object:root=true

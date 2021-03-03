@@ -18,13 +18,15 @@ package controllers
 
 import (
 	"context"
+	kbatch "k8s.io/api/batch/v1"
+	"time"
 
 	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	batchv1 "example.com/api/v1"
+	batch "example.com/api/v1"
 )
 
 // CronJobReconciler reconciles a CronJob object
@@ -32,22 +34,47 @@ type CronJobReconciler struct {
 	client.Client
 	Log    logr.Logger
 	Scheme *runtime.Scheme
+	Clock
 }
+
+type realClock struct{}
+
+func (_ realClock) Now() time.Time { return time.Now() }
+
+type Clock interface {
+	New() time.Time
+}
+
+var (
+	scheduledTimeAnnotation = "batch.tutorial.kubebuilder.io/scheduled-at"
+)
 
 // +kubebuilder:rbac:groups=batch.tutorial.kubebuilder.io,resources=cronjobs,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=batch.tutorial.kubebuilder.io,resources=cronjobs/status,verbs=get;update;patch
-
+// +kubebuilder:rbac:groups=batch,resources=jobs,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=batch,resources=jobs/status,verbs=get
 func (r *CronJobReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
-	_ = context.Background()
-	_ = r.Log.WithValues("cronjob", req.NamespacedName)
+	ctx := context.Background()
+	log := r.Log.WithValues("cronjob", req.NamespacedName)
 
-	// your logic here
+	var cronjob batch.CronJob
+	if err := r.Get(ctx, req.NamespacedName, &cronjob); err != nil {
+		log.Error(err, "unable to fetch Job")
+		return ctrl.Result{}, client.IgnoreNotFound(err)
+	}
+
+	var cronJobs kbatch.JobList
+	if err := r.List(ctx,&cronJobs, client.InNamespace(req.Namespace), client.MatchingFields{jobOwnerKey: req.Name}); err != nil {
+		log.Error(err, "unable to list child Jobs")
+		return ctrl.Result{}, err
+	}
 
 	return ctrl.Result{}, nil
+
 }
 
 func (r *CronJobReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&batchv1.CronJob{}).
+		For(&batch.CronJob{}).
 		Complete(r)
 }
