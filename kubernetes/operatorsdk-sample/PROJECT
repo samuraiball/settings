@@ -1,0 +1,9 @@
+domain: hirooka.dev
+layout:
+- go.kubebuilder.io/v3
+plugins:
+  manifests.sdk.operatorframework.io/v2: {}
+  scorecard.sdk.operatorframework.io/v2: {}
+projectName: operatorsdk-sample
+repo: github.com/samuraiball/settings
+version: "3"
