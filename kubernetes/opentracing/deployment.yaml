@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: quarkus-app
+  name: quarkus-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: quarkus-app
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: quarkus-app
+    spec:
+      containers:
+      - image: quarkus/open-tracing
+        name: open-tracing
+        imagePullPolicy: IfNotPresent
+        env:
+          - name: SPRING_SERVICE
+            value: spring-app:8082
+        resources: {}
+status: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: spring-app
+  name: spring-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: spring-app
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: spring-app
+    spec:
+      containers:
+      - image: spring/open-tracing
+        name: open-tracing
+        imagePullPolicy: IfNotPresent
+        resources: {}
+status: {}
